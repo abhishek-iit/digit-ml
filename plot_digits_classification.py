@@ -7,6 +7,11 @@ def load_data():
 
 def preprocess_data(images):
     n_samples = len(images)
+    print("Number of train, test, and dev samples together =", n_samples)
+    
+    height, width = images[0].shape
+    print("Size of the images in the dataset: Height =", height, ", Width =", width)
+    
     return images.reshape((n_samples, -1))
 
 # 1. Load data
@@ -40,8 +45,8 @@ for test_size in test_sizes:
         best_accuracy_test = predict_and_eval(best_model, X_Test, Y_Test)
 
         # 7. Output the results
-        print(f"test_size={test_size} dev_size={dev_size} train_size={1 - test_size - dev_size:.1f} train_acc={best_accuracy_train} dev_acc={best_accuracy_dev:.3f} test_acc={best_accuracy_test:.3f}")
-        print(f"best_hparams: {best_hparams}")
+        #print(f"test_size={test_size} dev_size={dev_size} train_size={1 - test_size - dev_size:.1f} train_acc={best_accuracy_train} dev_acc={best_accuracy_dev:.3f} test_acc={best_accuracy_test:.3f}")
+        #print(f"best_hparams: {best_hparams}")
 
 # 4. Split data
 # X_Train, X_Test, Y_Train, Y_Test, X_Dev, Y_Dev = split_train_dev_test(data, digits.target, 0.5, 0.1)
