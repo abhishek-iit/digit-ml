@@ -1,111 +1,84 @@
-import matplotlib.pyplot as plt
-from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from itertools import product
+from sklearn import svm, datasets, metrics
+from joblib import dump, load
+# we will put all utils here
 
+def get_combinations(param_name, param_values, base_combinations):    
+    new_combinations = []
+    for value in param_values:
+        for combination in base_combinations:
+            combination[param_name] = value
+            new_combinations.append(combination.copy())    
+    return new_combinations
 
-""" Functions common to all classification problems """
-    
-# Splits the given dataset into a set of training, development/validation and testing data
-def split_train_dev_test(data, labels, test_size, dev_size):
-    X_Train_Dev, X_Test, Y_Train_Dev, Y_Test = train_test_split(
-        data, labels, test_size=test_size, random_state=1)
-    
-    if dev_size > 0:
-        # Calculate train size given the dev_size
-        train_size = dev_size/(1-test_size)
-        
-        X_Train, X_Dev, Y_Train, Y_Dev = train_test_split(
-            X_Train_Dev, Y_Train_Dev, train_size=train_size,random_state=1)
-        
-        return X_Train, X_Dev, Y_Train, Y_Dev, X_Test, Y_Test
+def get_hyperparameter_combinations(dict_of_param_lists):    
+    base_combinations = [{}]
+    for param_name, param_values in dict_of_param_lists.items():
+        base_combinations = get_combinations(param_name, param_values, base_combinations)
+    return base_combinations
 
-    return X_Train_Dev, X_Test, Y_Train_Dev, Y_Test
-
-
-# Train a machine learning model.
-# As need arises add new model to the logic
-# Parameters:
-# - X: Features
-# - y: Labels
-# - model_params: Dictionary of model parameters
-# - model_type: Type of model to train ("svm", "random_forest", "logistic_regression")
-
-# Returns:
-# Trained model
-
-def train_model(X, y, model_params={"gamma": 0.001}, model_type="svm"):
-    
-    if model_params is None:
-        model_params = {}
-    
-    # Initialize classifier based on model_type
-    if model_type == "svm":
-        clf = svm.SVC
-    elif model_type == "random_forest":
-        clf = RandomForestClassifier
-    elif model_type == "logistic_regression":
-        clf = LogisticRegression
-    else:
-        raise ValueError(f"Invalid model_type: {model_type}")
-    
-    # Create and train the model
-    model = clf(**model_params)
-    model.fit(X, y)
-    
-    return model
-
-def predict(clf, X_test):
-    return clf.predict(X_test)
-
-def evaluate_model(y_true, y_pred, clf):
-    # print(f"Classification report for classifier {clf}:\n"
-    #       f"{metrics.classification_report(y_true, y_pred)}\n")
-    # disp = metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
-    
-    # print(f"Confusion matrix:\n{disp.confusion_matrix}")
-    return metrics.accuracy_score(y_true, y_pred)
-   
-
-def predict_and_eval(model, X_test, y_test):
-    # Predict
-    predicted = predict(model, X_test)
-  
-    # Evaluate model
-    return evaluate_model(y_test, predicted, model)   
-
-def rebuild_classification_report_from_cm(y_test, predicted):
-    confusion_matrix = metrics.confusion_matrix(y_test, predicted)
-    y_true = []
-    y_pred = []
-    for gt in range(len(confusion_matrix)):
-        for pred in range(len(confusion_matrix)):
-            y_true += [gt] * confusion_matrix[gt][pred]
-            y_pred += [pred] * confusion_matrix[gt][pred]
-    
-    print("Classification report rebuilt from confusion matrix:\n"
-          f"{metrics.classification_report(y_true, y_pred)}\n")   
-    
-def param_combinations(gamma_ranges, C_ranges):
-    # Create a combination of all parameters
-    list_of_all_param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in product(gamma_ranges, C_ranges)]
-    return list_of_all_param_combinations    
-
-def tune_hparams(X_train, y_train, X_dev, y_dev, list_of_all_param_combinations):
+def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_type="svm"):
     best_accuracy = -1
-    best_hparams = None
-    best_model = None
-
-    for params in list_of_all_param_combinations:
-        
-        #print(params)
-        model = train_model(X_train, y_train, params)
-        accuracy_dev = predict_and_eval(model, X_dev, y_dev)
-        if accuracy_dev > best_accuracy:
-            best_accuracy = accuracy_dev
-            best_hparams = params
+    best_model_path = ""
+    for h_params in h_params_combinations:
+        # 5. Model training
+        model = train_model(X_train, y_train, h_params, model_type=model_type)
+        # Predict the value of the digit on the test subset        
+        cur_accuracy = predict_and_eval(model, X_dev, y_dev)
+        if cur_accuracy > best_accuracy:
+            best_accuracy = cur_accuracy
+            best_hparams = h_params
+            best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
             best_model = model
 
-    return best_hparams, best_model, best_accuracy     
+    # save the best_model    
+    dump(best_model, best_model_path) 
+
+    print("Model save at {}".format(best_model_path))
+
+    return best_hparams, best_model_path, best_accuracy 
+
+
+
+def read_digits():
+    digits = datasets.load_digits()
+    X = digits.images
+    y = digits.target
+    return X, y 
+
+def preprocess_data(data):
+    # flatten the images
+    n_samples = len(data)
+    data = data.reshape((n_samples, -1))
+    return data
+
+# Split data into 50% train and 50% test subsets
+def split_data(x, y, test_size, random_state=1):
+    X_train, X_test, y_train, y_test = train_test_split(
+    x, y, test_size=test_size,random_state=random_state
+    )
+    return X_train, X_test, y_train, y_test
+
+# train the model of choice with the model prameter
+def train_model(x, y, model_params, model_type="svm"):
+    if model_type == "svm":
+        # Create a classifier: a support vector classifier
+        clf = svm.SVC
+    model = clf(**model_params)
+    # train the model
+    model.fit(x, y)
+    return model
+
+
+def train_test_dev_split(X, y, test_size, dev_size):
+    X_train_dev, X_test, Y_train_Dev, y_test =  split_data(X, y, test_size=test_size, random_state=1)
+    print("train+dev = {} test = {}".format(len(Y_train_Dev),len(y_test)))
+    
+    X_train, X_dev, y_train, y_dev = split_data(X_train_dev, Y_train_Dev, dev_size/(1-test_size), random_state=1)
+        
+    return X_train, X_test, X_dev, y_train, y_test, y_dev
+
+# Question 2:
+def predict_and_eval(model, X_test, y_test):
+    predicted = model.predict(X_test)
+    return metrics.accuracy_score(y_test, predicted)
