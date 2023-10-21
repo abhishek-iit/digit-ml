@@ -24,3 +24,21 @@ from sklearn.metrics import confusion_matrix, f1_score
 conf_matrix_prod_cand = confusion_matrix(production_pred, candidate_pred)
 conf_matrix_correct_incorrect = confusion_matrix((y_test == production_pred).astype(int), (y_test == candidate_pred).astype(int))
 f1_macro = f1_score(y_test, production_pred, average='macro')
+
+# Print production model's accuracy
+print(f"Production model's accuracy: {production_acc}")
+
+# Print candidate model's accuracy
+print(f"Candidate model's accuracy: {candidate_acc}")
+
+# Print confusion matrix between predictions of production and candidate models
+print("Confusion matrix between predictions of production and candidate models:")
+print(conf_matrix_prod_cand)
+
+# Print confusion matrix for samples predicted correctly in production but not in candidate
+print("Confusion matrix for samples predicted correctly in production but not in candidate:")
+print(conf_matrix_correct_incorrect)
+
+# Print macro-average F1 metrics
+print("Macro-average F1 metrics:")
+print(f1_macro)
