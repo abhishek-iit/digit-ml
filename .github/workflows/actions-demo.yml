@@ -11,8 +11,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       
-      - name: Install dep
-        run:  pip3 install --no-cache-dir -r requirements.txt
-      - name: Run Experiment
+      - name: Run Docker script
         run:
-          python plot_digits_classification.py
+          ./docker_run.sh
