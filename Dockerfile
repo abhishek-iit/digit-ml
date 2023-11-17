@@ -9,7 +9,11 @@ COPY . /app
 
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
-# Define the volume mount point
-VOLUME /app/models
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
 
-CMD ["pytest"]
+# Define environment variable
+ENV FLASK_APP=api/app.py
+
+# Run the application
+CMD ["flask", "run", "--host=0.0.0.0"]
