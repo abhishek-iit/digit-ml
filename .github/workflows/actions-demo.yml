@@ -15,9 +15,9 @@ jobs:
         run:
           ls -lh models
 
-      - name: Run Docker script
+      - name: Run pytest to run the flash based tests
         run:
-          ./docker_run.sh
+          pytest ./api/test_app.py 
 
       - name: List of files inside models folder after running docker script
         run:
