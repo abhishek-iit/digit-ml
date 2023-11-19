@@ -11,9 +11,9 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       
-      - name: List of files inside models folder before running docker script
+      - name: Install dependencies
         run:
-          ls -lh models
+          pip3 install --no-cache-dir -r requirements.txt
 
       - name: Run pytest to run the flash based tests
         run:
