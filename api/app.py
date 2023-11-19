@@ -9,6 +9,10 @@ model = load(model_path)
 def hello_world():
     return "<b>Hello, World!</b>"
 
+@app.route("/", methods=["POST"])
+def hello_world_post():    
+    return {"op" : "Hello, World POST " + request.json["suffix"]}
+
 @app.route("/sum", methods=['POST'])
 def sum_numbers():
     data = request.json
@@ -38,5 +42,5 @@ def compare():
     predicted2 = model.predict([image2])
     return jsonify({"are_same_digit": int(predicted1[0]) == int(predicted2[0])})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
