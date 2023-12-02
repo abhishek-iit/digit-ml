@@ -1,4 +1,6 @@
 from utils import get_hyperparameter_combinations, train_test_dev_split,read_digits, tune_hparams, preprocess_data
+from sklearn.linear_model import LogisticRegression
+from joblib import load
 import os
 def test_for_hparam_cominations_count():
     # a test case to check that all possible combinations of paramers are indeed generated
@@ -62,3 +64,112 @@ def test_data_splitting():
     assert (len(X_train) == 30) 
     assert (len(X_test) == 10)
     assert  ((len(X_dev) == 60))
+
+
+# def test_solver_name_match():
+#     model_file_name = 'models/m22aie228_lr_solver_lbfgs.joblib'
+#     model = load(model_file_name)
+#     model_solver = model.get_params()['solver']
+
+#     # Extract the solver name from the file name
+#     expected_solver = model_file_name.split('_')[2].split('.')[0]
+#     assert (model_solver == expected_solver)
+
+
+# def test_logistic_regression_model_type():
+#     # Test case to check if the loaded model is a Logistic Regression model
+#     model_filename = 'models/m22aie228_lr_solver_lbfgs.joblib'  # Update with your actual file path
+#     if os.path.exists(model_filename):
+#         model = load(model_filename)
+#         assert isinstance(model, LogisticRegression)
+#     else:
+#         assert False, "Model file does not exist"
+
+
+def test_logistic_regression_model_type():
+    # Test case to check if the loaded model is a Logistic Regression model
+    model_filename = 'models/m22aie228_lr_solver_lbfgs.joblib'  # Update with your actual file path
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert isinstance(model, LogisticRegression)
+    else:
+        assert False, "Model file does not exist"
+
+
+    model_filename = 'models/m22aie228_lr_solver_liblinear.joblib'  # Update with your actual file path
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert isinstance(model, LogisticRegression)
+    else:
+        assert False, "Model file does not exist"
+
+
+    model_filename = 'models/m22aie228_lr_solver_newton-cg.joblib'  # Update with your actual file path
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert isinstance(model, LogisticRegression)
+    else:
+        assert False, "Model file does not exist"
+
+
+    model_filename = 'models/m22aie228_lr_solver_sag.joblib'  # Update with your actual file path
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert isinstance(model, LogisticRegression)
+    else:
+        assert False, "Model file does not exist"
+
+
+    model_filename = 'models/m22aie228_lr_solver_saga.joblib'  # Update with your actual file path
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert isinstance(model, LogisticRegression)
+    else:
+        assert False, "Model file does not exist"                
+
+def test_logistic_regression_solver():
+    # Test case to check if the solver of the Logistic Regression model matches the expected solver
+    model_filename = 'models/m22aie228_lr_solver_lbfgs.joblib'  # Update with your actual file path
+    expected_solver = 'lbfgs'  # Update this to the correct solver name used in your model
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert model.get_params()['solver'] == expected_solver
+    else:
+        assert False, "Model file does not exist"        
+
+   # Test case to check if the solver of the Logistic Regression model matches the expected solver
+    model_filename = 'models/m22aie228_lr_solver_liblinear.joblib'  # Update with your actual file path
+    expected_solver = 'liblinear'  # Update this to the correct solver name used in your model
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert model.get_params()['solver'] == expected_solver
+    else:
+        assert False, "Model file does not exist"     
+
+
+    # Test case to check if the solver of the Logistic Regression model matches the expected solver
+    model_filename = 'models/m22aie228_lr_solver_newton-cg.joblib'  # Update with your actual file path
+    expected_solver = 'newton-cg'  # Update this to the correct solver name used in your model
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert model.get_params()['solver'] == expected_solver
+    else:
+        assert False, "Model file does not exist"     
+
+    # Test case to check if the solver of the Logistic Regression model matches the expected solver
+    model_filename = 'models/m22aie228_lr_solver_sag.joblib'  # Update with your actual file path
+    expected_solver = 'sag'  # Update this to the correct solver name used in your model
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert model.get_params()['solver'] == expected_solver
+    else:
+        assert False, "Model file does not exist"     
+
+    # Test case to check if the solver of the Logistic Regression model matches the expected solver
+    model_filename = 'models/m22aie228_lr_solver_saga.joblib'  # Update with your actual file path
+    expected_solver = 'saga'  # Update this to the correct solver name used in your model
+    if os.path.exists(model_filename):
+        model = load(model_filename)
+        assert model.get_params()['solver'] == expected_solver
+    else:
+        assert False, "Model file does not exist"                  
