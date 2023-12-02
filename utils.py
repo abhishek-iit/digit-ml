@@ -1,6 +1,9 @@
 from sklearn.model_selection import train_test_split
 from sklearn import svm, tree, datasets, metrics
 from joblib import dump, load
+from sklearn.preprocessing import normalize
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
 # we will put all utils here
 
 def get_combinations(param_name, param_values, base_combinations):    
@@ -25,10 +28,16 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_ty
         model = train_model(X_train, y_train, h_params, model_type=model_type)
         # Predict the value of the digit on the test subset        
         cur_accuracy, _, _ = predict_and_eval(model, X_dev, y_dev)
+
+        if model_type == 'lr' :
+             
+             filepath = "./models/m22aie228_{}_".format(model_type) +"_".join(["{}_{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
+             dump(model, filepath) 
+        
         if cur_accuracy > best_accuracy:
             best_accuracy = cur_accuracy
             best_hparams = h_params
-            best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
+            best_model_path = "./models/m22aie228_{}_".format(model_type) +"_".join(["{}_{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
             best_model = model
 
     # save the best_model    
@@ -45,10 +54,18 @@ def read_digits():
     y = digits.target
     return X, y 
 
+def preprocess_data1(data):
+    # flatten the images
+    n_samples = len(data)
+    data = data.reshape((n_samples, -1))
+    return data
+
 def preprocess_data(data):
     # flatten the images
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
+    # normalize the data
+    data = normalize(data, norm='l2', axis=1, copy=True)
     return data
 
 # Split data into 50% train and 50% test subsets
@@ -66,6 +83,8 @@ def train_model(x, y, model_params, model_type="svm"):
     if model_type == "tree":
         # Create a classifier: a decision tree classifier
         clf = tree.DecisionTreeClassifier
+    if model_type == "lr":  # Logistic Regression
+        clf = LogisticRegression    
     model = clf(**model_params)
     # train the model
     model.fit(x, y)
